@@ -1,0 +1,451 @@
+device InnerBmi270 {
+    register-address-type: u8,
+    buffer-address-type: u8,
+
+    /// Contains the hard-coded chip identifier (0x24).
+    register ChipId {
+        access: RO,
+        address: 0x00,
+        fields: fieldset ChipIdFields {
+            size-bytes: 1,
+            field chip_id 7:0 -> u8,
+        }
+    },
+
+    /// Reports error conditions: FIFO, AUX, internal, and fatal errors.
+    register ErrReg {
+        access: RO,
+        address: 0x02,
+        fields: fieldset ErrRegFields {
+            size-bytes: 1,
+            field fatal_err 0 -> u8,
+            field internal_err 4:1 -> u8,
+            field fifo_err 6 -> u8,
+            field aux_err 7 -> u8,
+        }
+    },
+
+    /// Status flags: data-ready for acc, gyr, aux and command-ready.
+    register Status {
+        access: RO,
+        address: 0x03,
+        fields: fieldset StatusFields {
+            size-bytes: 1,
+            field aux_busy 2 -> u8,
+            field cmd_rdy 4 -> u8,
+            field drdy_aux 5 -> u8,
+            field drdy_gyr 6 -> u8,
+            field drdy_acc 7 -> u8,
+        }
+    },
+
+    /// Accelerometer data for X, Y, Z axes (6 bytes, signed 16-bit per axis, LE).
+    register AccData {
+        access: RO,
+        address: 0x0C,
+        fields: fieldset AccDataFields {
+            size-bytes: 6,
+            byte-order: LE,
+            field acc_x 15:0 -> i16,
+            field acc_y 31:16 -> i16,
+            field acc_z 47:32 -> i16,
+        }
+    },
+
+    /// Gyroscope data for X, Y, Z axes (6 bytes, signed 16-bit per axis, LE).
+    register GyrData {
+        access: RO,
+        address: 0x12,
+        fields: fieldset GyrDataFields {
+            size-bytes: 6,
+            byte-order: LE,
+            field gyr_x 15:0 -> i16,
+            field gyr_y 31:16 -> i16,
+            field gyr_z 47:32 -> i16,
+        }
+    },
+
+    /// 24-bit sensortime counter (39.0625 us per tick).
+    register Sensortime {
+        access: RO,
+        address: 0x18,
+        fields: fieldset SensortimeFields {
+            size-bytes: 3,
+            byte-order: LE,
+            field sensor_time 23:0 -> u32,
+        }
+    },
+
+    /// Event/status: POR detected and error code.
+    register Event {
+        access: RO,
+        address: 0x1B,
+        fields: fieldset EventFields {
+            size-bytes: 1,
+            field por_detected 0 -> u8,
+            field error_code 4:2 -> u8 as enum ErrorCodeVariant {
+                NoError: default 0x00,
+                AccErr: 0x01,
+                GyrErr: 0x02,
+                AccAndGyrErr: 0x03,
+            },
+        }
+    },
+
+    /// Interrupt status register 1: data-ready and FIFO interrupt flags.
+    register IntStatus1 {
+        access: RO,
+        address: 0x1D,
+        fields: fieldset IntStatus1Fields {
+            size-bytes: 1,
+            field ffull_int 0 -> u8,
+            field fwm_int 1 -> u8,
+            field err_int 2 -> u8,
+            field aux_drdy_int 5 -> u8,
+            field gyr_drdy_int 6 -> u8,
+            field acc_drdy_int 7 -> u8,
+        }
+    },
+
+    /// Temperature sensor output (16-bit, 1/512 K/LSB, 0x0000 = 23 deg C).
+    register Temperature {
+        access: RO,
+        address: 0x22,
+        fields: fieldset TemperatureFields {
+            size-bytes: 2,
+            byte-order: LE,
+            field temp_data 15:0 -> i16,
+        }
+    },
+
+    /// Internal status register: init_status indicates feature engine boot state.
+    register InternalStatus {
+        access: RO,
+        address: 0x21,
+        fields: fieldset InternalStatusFields {
+            size-bytes: 1,
+            field init_status 3:0 -> u8,
+            field axes_remap_error 5 -> u8,
+            field odr_50hz_error 6 -> u8,
+        }
+    },
+
+    /// FIFO fill level (14-bit, unit = bytes).
+    register FifoLength {
+        access: RO,
+        address: 0x24,
+        fields: fieldset FifoLengthFields {
+            size-bytes: 2,
+            byte-order: LE,
+            field byte_counter 13:0 -> u16,
+        }
+    },
+
+    /// FIFO data buffer. Burst read only; address does not auto-increment.
+    buffer FifoData {
+        address: 0x26,
+    },
+
+    /// Accelerometer configuration: output data rate, bandwidth, and filter performance.
+    register AccConf {
+        access: RW,
+        address: 0x40,
+        fields: fieldset AccConfFields {
+            size-bytes: 1,
+            field acc_odr 3:0 -> u8 as enum AccOdrVariant {
+                Odr0_781Hz: 0x01,
+                Odr1_563Hz: 0x02,
+                Odr3_125Hz: 0x03,
+                Odr6_25Hz: 0x04,
+                Odr12_5Hz: 0x05,
+                Odr25Hz: 0x06,
+                Odr50Hz: 0x07,
+                Odr100Hz: 0x08,
+                Odr200Hz: 0x09,
+                Odr400Hz: 0x0A,
+                Odr800Hz: 0x0B,
+                Odr1600Hz: default 0x0C,
+            },
+            field acc_bwp 6:4 -> u8 as enum AccBwpVariant {
+                Osr4: 0x00,
+                Osr2: 0x01,
+                Normal: default 0x02,
+                Cic: 0x03,
+                ResAvg16: 0x04,
+                ResAvg32: 0x05,
+                ResAvg64: 0x06,
+                ResAvg128: 0x07,
+            },
+            field acc_filter_perf 7 -> u8 as enum AccFilterPerf {
+                PowerOptimized: 0x00,
+                Performance: default 0x01,
+            },
+        }
+    },
+
+    /// Accelerometer measurement range: +/-2g, 4g, 8g, or 16g.
+    register AccRange {
+        access: RW,
+        address: 0x41,
+        fields: fieldset AccRangeFields {
+            size-bytes: 1,
+            field acc_range 1:0 -> u8 as enum AccRangeVariant {
+                Gs2: 0x00,
+                Gs4: 0x01,
+                Gs8: default 0x02,
+                Gs16: 0x03,
+            },
+        }
+    },
+
+    /// Gyroscope configuration: output data rate, bandwidth, noise and filter performance.
+    register GyrConf {
+        access: RW,
+        address: 0x42,
+        fields: fieldset GyrConfFields {
+            size-bytes: 1,
+            field gyr_odr 3:0 -> u8 as enum GyrOdrVariant {
+                Odr25Hz: 0x06,
+                Odr50Hz: 0x07,
+                Odr100Hz: 0x08,
+                Odr200Hz: 0x09,
+                Odr400Hz: 0x0A,
+                Odr800Hz: 0x0B,
+                Odr1600Hz: default 0x0C,
+                Odr3200Hz: 0x0D,
+            },
+            field gyr_bwp 5:4 -> u8 as enum GyrBwpVariant {
+                Osr4: 0x00,
+                Osr2: 0x01,
+                Normal: default 0x02,
+            },
+            field gyr_noise_perf 6 -> u8 as enum GyrNoisePerf {
+                PowerOptimized: 0x00,
+                Performance: default 0x01,
+            },
+            field gyr_filter_perf 7 -> u8 as enum GyrFilterPerf {
+                PowerOptimized: 0x00,
+                Performance: default 0x01,
+            },
+        }
+    },
+
+    /// Gyroscope full-scale range: +/-125, 250, 500, 1000, or 2000 dps.
+    register GyrRange {
+        access: RW,
+        address: 0x43,
+        fields: fieldset GyrRangeFields {
+            size-bytes: 1,
+            field gyr_range 2:0 -> u8 as enum GyrRangeVariant {
+                Dps2000: default 0x00,
+                Dps1000: 0x01,
+                Dps500: 0x02,
+                Dps250: 0x03,
+                Dps125: 0x04,
+            },
+            field ois_range 3 -> u8,
+        }
+    },
+
+    /// FIFO downsampling for accelerometer and gyroscope data.
+    register FifoDowns {
+        access: RW,
+        address: 0x45,
+        fields: fieldset FifoDownsFields {
+            size-bytes: 1,
+            field gyr_fifo_downs 2:0 -> u8,
+            field gyr_fifo_filt_data 3 -> u8,
+            field acc_fifo_downs 6:4 -> u8,
+            field acc_fifo_filt_data 7 -> u8,
+        }
+    },
+
+    /// FIFO watermark level (13-bit, unit = bytes).
+    register FifoWtm {
+        access: RW,
+        address: 0x46,
+        fields: fieldset FifoWtmFields {
+            size-bytes: 2,
+            byte-order: LE,
+            field fifo_water_mark 12:0 -> u16,
+        }
+    },
+
+    /// FIFO configuration: stop-on-full and sensortime frame enable.
+    register FifoConfig0 {
+        access: RW,
+        address: 0x48,
+        fields: fieldset FifoConfig0Fields {
+            size-bytes: 1,
+            field fifo_stop_on_full 0 -> u8,
+            field fifo_time_en 1 -> u8,
+        }
+    },
+
+    /// FIFO configuration: header mode, tag, and data source enables.
+    register FifoConfig1 {
+        access: RW,
+        address: 0x49,
+        fields: fieldset FifoConfig1Fields {
+            size-bytes: 1,
+            field fifo_tag_int1_en 1:0 -> u8,
+            field fifo_tag_int2_en 3:2 -> u8,
+            field fifo_header_en 4 -> u8,
+            field fifo_aux_en 5 -> u8,
+            field fifo_acc_en 6 -> u8,
+            field fifo_gyr_en 7 -> u8,
+        }
+    },
+
+    /// INT1 pin electrical configuration: input, output enable, open-drain, active level.
+    register Int1IoCtrl {
+        access: RW,
+        address: 0x53,
+        fields: fieldset Int1IoCtrlFields {
+            size-bytes: 1,
+            field int1_lvl 1 -> u8,
+            field int1_od 2 -> u8,
+            field int1_output_en 3 -> u8,
+            field int1_input_en 4 -> u8,
+        }
+    },
+
+    /// INT2 pin electrical configuration: input, output enable, open-drain, active level.
+    register Int2IoCtrl {
+        access: RW,
+        address: 0x54,
+        fields: fieldset Int2IoCtrlFields {
+            size-bytes: 1,
+            field int2_lvl 1 -> u8,
+            field int2_od 2 -> u8,
+            field int2_output_en 3 -> u8,
+            field int2_input_en 4 -> u8,
+        }
+    },
+
+    /// Map data-ready, FIFO, and error interrupts to INT1 and INT2 pins.
+    register IntMapData {
+        access: RW,
+        address: 0x58,
+        fields: fieldset IntMapDataFields {
+            size-bytes: 1,
+            field ffull_int1 0 -> u8,
+            field fwm_int1 1 -> u8,
+            field drdy_int1 2 -> u8,
+            field err_int1 3 -> u8,
+            field ffull_int2 4 -> u8,
+            field fwm_int2 5 -> u8,
+            field drdy_int2 6 -> u8,
+            field err_int2 7 -> u8,
+        }
+    },
+
+    /// Feature initialization control. Write 0x01 to start initialization.
+    register InitCtrl {
+        access: RW,
+        address: 0x59,
+        fields: fieldset InitCtrlFields {
+            size-bytes: 1,
+            field init_ctrl 7:0 -> u8,
+        }
+    },
+
+    /// Feature initialization address (low nibble, bits 0-3).
+    register InitAddr0 {
+        access: RW,
+        address: 0x5B,
+        fields: fieldset InitAddr0Fields {
+            size-bytes: 1,
+            field base_0_3 3:0 -> u8,
+        }
+    },
+
+    /// Feature initialization address (bits 4-11).
+    register InitAddr1 {
+        access: RW,
+        address: 0x5C,
+        fields: fieldset InitAddr1Fields {
+            size-bytes: 1,
+            field base_11_4 7:0 -> u8,
+        }
+    },
+
+    /// Feature initialization data register.
+    register InitData {
+        access: RW,
+        address: 0x5E,
+        fields: fieldset InitDataFields {
+            size-bytes: 1,
+            field data 7:0 -> u8,
+        }
+    },
+
+    /// Internal error status for feature engine.
+    register InternalError {
+        access: RO,
+        address: 0x5F,
+        fields: fieldset InternalErrorFields {
+            size-bytes: 1,
+            field int_err_1 1 -> u8,
+            field int_err_2 2 -> u8,
+            field feat_eng_disabled 4 -> u8,
+        }
+    },
+
+    /// Interface configuration: SPI mode, OIS, and AUX enable.
+    register IfConf {
+        access: RW,
+        address: 0x6B,
+        fields: fieldset IfConfFields {
+            size-bytes: 1,
+            field spi3 0 -> u8,
+            field spi3_ois 1 -> u8,
+            field ois_en 4 -> u8,
+            field aux_en 5 -> u8,
+        }
+    },
+
+    /// Advanced power save configuration.
+    register PwrConf {
+        access: RW,
+        address: 0x7C,
+        fields: fieldset PwrConfFields {
+            size-bytes: 1,
+            field adv_power_save 0 -> u8 as enum AdvPowerSave {
+                Off: 0x00,
+                On: default 0x01,
+            },
+            field fifo_self_wake_up 1 -> u8,
+            field fup_en 2 -> u8,
+        }
+    },
+
+    /// Power control: enable/disable aux, gyro, accel, and temperature sensors.
+    register PwrCtrl {
+        access: RW,
+        address: 0x7D,
+        fields: fieldset PwrCtrlFields {
+            size-bytes: 1,
+            field aux_en 0 -> u8,
+            field gyr_en 1 -> u8,
+            field acc_en 2 -> u8,
+            field temp_en 3 -> u8,
+        }
+    },
+
+    /// Command register. Write 0xB6 for soft reset, 0xB0 for FIFO flush.
+    register Cmd {
+        access: WO,
+        address: 0x7E,
+        fields: fieldset CmdFields {
+            size-bytes: 1,
+            field cmd 7:0 -> u8 as enum CmdVariant {
+                Softreset: default 0xB6,
+                FifoFlush: 0xB0,
+                NvmProg: 0xA0,
+                GTrigger: 0x02,
+                UsrGain: 0x03,
+            },
+        }
+    },
+}
