@@ -2,6 +2,8 @@
 
 mod firmware;
 
+pub mod compat_embedded_hal;
+
 use device_driver::AsyncRegisterInterface;
 use embedded_hal_async::delay::DelayNs;
 use futures_util::TryFutureExt as _;
@@ -64,7 +66,7 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     /// The firmware blob is loaded automatically from a bundled constant.
     pub async fn initialize(
         interface: I,
-        delay: &mut impl DelayNs,
+        mut delay: impl DelayNs,
     ) -> Result<Self, Error<I::Error>> {
         let mut bmi = Bmi270 {
             inner: InnerBmi270::new(interface),
@@ -78,7 +80,7 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
 
         // Soft reset and wait for ready
         bmi.soft_reset().await?;
-        bmi.wait_cmd_ready(delay).await?;
+        bmi.wait_cmd_ready(&mut delay).await?;
 
         // Disable advanced power save
         bmi.inner
@@ -106,7 +108,7 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     }
 
     /// Load feature initialization data into the device from the bundled firmware.
-    async fn load_init_data(&mut self, delay: &mut impl DelayNs) -> Result<(), Error<I::Error>> {
+    async fn load_init_data(&mut self, delay: impl DelayNs) -> Result<(), Error<I::Error>> {
         let data = firmware::BMI270_FIRMWARE;
 
         // Prepare config load: write 0x00 to arm the firmware loader
@@ -148,7 +150,7 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     }
 
     /// Poll INTERNAL_STATUS until init_status == 0x01 (init_ok), or error.
-    async fn wait_init_done(&mut self, delay: &mut impl DelayNs) -> Result<(), Error<I::Error>> {
+    async fn wait_init_done(&mut self, mut delay: impl DelayNs) -> Result<(), Error<I::Error>> {
         // Datasheet: init completes within at most 20 ms
         delay.delay_ms(20).await;
 
@@ -166,7 +168,7 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     }
 
     /// Poll STATUS register until cmd_rdy is set.
-    async fn wait_cmd_ready(&mut self, delay: &mut impl DelayNs) -> Result<(), Error<I::Error>> {
+    async fn wait_cmd_ready(&mut self, mut delay: impl DelayNs) -> Result<(), Error<I::Error>> {
         for _ in 0..20 {
             let status = self.inner.status().read_async().await?;
             if status.cmd_rdy() != 0 {
