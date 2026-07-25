@@ -20,7 +20,8 @@ const BMI270_CHIP_ID: u8 = 0x24;
 pub enum Error<E> {
     Transport(E),
     ChipId(u8),
-    Init,
+    BadInit,
+    CmdTimeout,
 }
 
 impl<E> From<E> for Error<E> {
@@ -83,10 +84,7 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
         bmi.wait_cmd_ready(&mut delay).await?;
 
         // Disable advanced power save
-        bmi.inner
-            .pwr_conf()
-            .modify_async(|reg| reg.set_adv_power_save(AdvPowerSave::Off))
-            .await?;
+        bmi.set_adv_power_save(false).await?;
 
         // Wait at least 450 us for APS disable to take effect
         delay.delay_ms(1).await;
@@ -108,13 +106,13 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     }
 
     /// Load feature initialization data into the device from the bundled firmware.
-    async fn load_init_data(&mut self, delay: impl DelayNs) -> Result<(), Error<I::Error>> {
+    async fn load_init_data(&mut self, mut delay: impl DelayNs) -> Result<(), Error<I::Error>> {
         let data = firmware::BMI270_FIRMWARE;
 
         // Prepare config load: write 0x00 to arm the firmware loader
         self.inner
             .init_ctrl()
-            .write_async(|reg| reg.set_init_ctrl(0x00))
+            .write_async(|reg| reg.set_init_ctrl(InitCtrlVariant::Prepare))
             .await?;
 
         // Write init data in 32-byte chunks
@@ -130,6 +128,8 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
                 .write_async(|reg| reg.set_base_11_4((addr >> 4) as u8))
                 .await?;
 
+            // BMI270 auto-increments the internal address pointer after each INIT_DATA write.
+            // Writing bytes individually is equivalent to a burst write.
             for &byte in chunk {
                 self.inner
                     .init_data()
@@ -138,10 +138,13 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
             }
         }
 
+        // Datasheet: wait 450µs after firmware upload before triggering init
+        delay.delay_us(450).await;
+
         // Trigger initialization
         self.inner
             .init_ctrl()
-            .write_async(|reg| reg.set_init_ctrl(0x01))
+            .write_async(|reg| reg.set_init_ctrl(InitCtrlVariant::Trigger))
             .await?;
 
         // Wait for initialization to complete
@@ -149,34 +152,32 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
         Ok(())
     }
 
-    /// Poll INTERNAL_STATUS until init_status == 0x01 (init_ok), or error.
+    /// Poll INTERNAL_STATUS until init_status == InitOk, or error.
     async fn wait_init_done(&mut self, mut delay: impl DelayNs) -> Result<(), Error<I::Error>> {
         // Datasheet: init completes within at most 20 ms
-        delay.delay_ms(20).await;
-
-        for _ in 0..10 {
-            let status = self.inner.internal_status().read_async().await?;
-            if status.init_status() == 0x01 {
-                return Ok(());
-            }
-            if status.init_status() != 0x00 {
-                return Err(Error::Init);
-            }
+        for _ in 0..20 {
             delay.delay_ms(1).await;
+            let status = self.inner.internal_status().read_async().await?;
+            match status.init_status() {
+                InitStatusVariant::NotInit => continue,
+                InitStatusVariant::InitOk => return Ok(()),
+                _ => return Err(Error::BadInit),
+            }
         }
-        Err(Error::Init)
+        Err(Error::BadInit)
     }
 
     /// Poll STATUS register until cmd_rdy is set.
     async fn wait_cmd_ready(&mut self, mut delay: impl DelayNs) -> Result<(), Error<I::Error>> {
+        // Datasheet: cmd completes within at most 20 ms
         for _ in 0..20 {
+            delay.delay_ms(1).await;
             let status = self.inner.status().read_async().await?;
             if status.cmd_rdy() != 0 {
                 return Ok(());
             }
-            delay.delay_ms(1).await;
         }
-        Err(Error::Init)
+        Err(Error::CmdTimeout)
     }
 
     // --- Chip ID ---
@@ -416,11 +417,17 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     }
 
     /// Read the error register.
-    pub fn read_err_reg(&mut self) -> impl Future<Output = Result<(bool, bool, bool), I::Error>> {
-        self.inner
-            .err_reg()
-            .read_async()
-            .map_ok(|e| (e.fatal_err() != 0, e.fifo_err() != 0, e.aux_err() != 0))
+    pub fn read_err_reg(
+        &mut self,
+    ) -> impl Future<Output = Result<(bool, u8, bool, bool), I::Error>> {
+        self.inner.err_reg().read_async().map_ok(|e| {
+            (
+                e.fatal_err() != 0,
+                e.internal_err(),
+                e.fifo_err() != 0,
+                e.aux_err() != 0,
+            )
+        })
     }
 
     // --- Sensortime ---

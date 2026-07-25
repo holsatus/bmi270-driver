@@ -124,7 +124,16 @@ device InnerBmi270 {
         address: 0x21,
         fields: fieldset InternalStatusFields {
             size-bytes: 1,
-            field init_status 3:0 -> u8,
+            field init_status 3:0 -> u8 as enum InitStatusVariant {
+                NotInit: default 0x00,
+                InitOk: 0x01,
+                InitErr: 0x02,
+                DrvErr: 0x03,
+                SnsStop: 0x04,
+                NvmError: 0x05,
+                StartUpError: 0x06,
+                CompatError: 0x07,
+            },
             field axes_remap_error 5 -> u8,
             field odr_50hz_error 6 -> u8,
         }
@@ -160,21 +169,21 @@ device InnerBmi270 {
                 Odr12p5Hz: 0x05,
                 Odr25Hz: 0x06,
                 Odr50Hz: 0x07,
-                Odr100Hz: 0x08,
+                Odr100Hz: default 0x08,
                 Odr200Hz: 0x09,
                 Odr400Hz: 0x0A,
                 Odr800Hz: 0x0B,
-                Odr1600Hz: default 0x0C,
+                Odr1600Hz: 0x0C,
             },
             field acc_bwp 6:4 -> u8 as enum AccBwpVariant {
                 Osr4: 0x00,
                 Osr2: 0x01,
                 Normal: default 0x02,
-                Cic: 0x03,
-                ResAvg16: 0x04,
-                ResAvg32: 0x05,
-                ResAvg64: 0x06,
-                ResAvg128: 0x07,
+                Cic8: 0x03,
+                Res16: 0x04,
+                Res32: 0x05,
+                Res64: 0x06,
+                Res128: 0x07,
             },
             field acc_filter_perf 7 -> u8 as enum AccFilterPerf {
                 PowerOptimized: 0x00,
@@ -208,11 +217,12 @@ device InnerBmi270 {
                 Odr25Hz: 0x06,
                 Odr50Hz: 0x07,
                 Odr100Hz: 0x08,
-                Odr200Hz: 0x09,
+                Odr200Hz: default 0x09,
                 Odr400Hz: 0x0A,
                 Odr800Hz: 0x0B,
-                Odr1600Hz: default 0x0C,
+                Odr1600Hz: 0x0C,
                 Odr3200Hz: 0x0D,
+                Odr6400Hz: 0x0E,
             },
             field gyr_bwp 5:4 -> u8 as enum GyrBwpVariant {
                 Osr4: 0x00,
@@ -220,8 +230,8 @@ device InnerBmi270 {
                 Normal: default 0x02,
             },
             field gyr_noise_perf 6 -> u8 as enum GyrNoisePerf {
-                PowerOptimized: 0x00,
-                Performance: default 0x01,
+                PowerOptimized: default 0x00,
+                Performance: 0x01,
             },
             field gyr_filter_perf 7 -> u8 as enum GyrFilterPerf {
                 PowerOptimized: 0x00,
@@ -340,13 +350,16 @@ device InnerBmi270 {
         }
     },
 
-    /// Feature initialization control. Write 0x01 to start initialization.
+    /// Feature initialization control. Write 0x00 to prepare config load, 0x01 to trigger init.
     register InitCtrl {
         access: RW,
         address: 0x59,
         fields: fieldset InitCtrlFields {
             size-bytes: 1,
-            field init_ctrl 7:0 -> u8,
+            field init_ctrl 7:0 -> u8 as enum InitCtrlVariant {
+                Prepare: default 0x00,
+                Trigger: 0x01,
+            },
         }
     },
 

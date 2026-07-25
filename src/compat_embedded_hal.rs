@@ -35,9 +35,11 @@ impl<I: SpiDevice> AsyncRegisterInterface for SpiWrap<I> {
         _metadata: &device_driver::FieldsetMetadata,
     ) -> Result<(), Self::Error> {
         const READ_DIR: u8 = 0x80;
+        // BMI270 SPI requires a dummy byte before actual register data.
         self.inner
             .transaction(&mut [
                 spi::Operation::Write(&[address | READ_DIR]),
+                spi::Operation::Read(&mut [0u8]),
                 spi::Operation::Read(data),
             ])
             .await
