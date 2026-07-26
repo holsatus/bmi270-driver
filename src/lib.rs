@@ -14,7 +14,7 @@ device_driver::compile!(
 );
 
 /// The expected chip ID for the BMI270.
-const BMI270_CHIP_ID: u8 = 0x24;
+pub const BMI270_CHIP_ID: u8 = 0x24;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Error<E> {
