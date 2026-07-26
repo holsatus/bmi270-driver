@@ -5,8 +5,10 @@ mod firmware;
 pub mod compat_embedded_hal;
 
 use device_driver::AsyncRegisterInterface;
-use embedded_hal_async::delay::DelayNs;
+use embedded_hal_async::{delay::DelayNs, i2c::I2c, spi::SpiDevice};
 use futures_util::TryFutureExt as _;
+
+use crate::compat_embedded_hal::{I2cWrap, SpiWrap};
 
 device_driver::compile!(
     options: "",
@@ -61,10 +63,36 @@ impl GyrRangeVariant {
     }
 }
 
+impl<SPI: SpiDevice> Bmi270<SpiWrap<SPI>> {
+    /// Initialize the BMI270 with the given SPI interface
+    pub fn initialize_spi(
+        interface: SPI,
+        delay: impl DelayNs,
+    ) -> impl Future<Output = Result<Self, Error<SPI::Error>>> {
+        let i2c = SpiWrap { inner: interface };
+
+        Bmi270::initialize(i2c, delay)
+    }
+}
+
+impl<I2C: I2c> Bmi270<I2cWrap<I2C>> {
+    /// Initialize the BMI270 with the given I2C interface
+    pub fn initialize_i2c(
+        interface: I2C,
+        device_address: u8,
+        delay: impl DelayNs,
+    ) -> impl Future<Output = Result<Self, Error<I2C::Error>>> {
+        let i2c = I2cWrap {
+            inner: interface,
+            device_address,
+        };
+
+        Bmi270::initialize(i2c, delay)
+    }
+}
+
 impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     /// Initialize the BMI270: soft reset, disable APS, load features, verify chip ID.
-    ///
-    /// The firmware blob is loaded automatically from a bundled constant.
     pub async fn initialize(
         interface: I,
         mut delay: impl DelayNs,
