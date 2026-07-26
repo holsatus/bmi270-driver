@@ -324,6 +324,40 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     // --- Data Readout ---
 
     /// Read raw accelerometer data in LSB (X, Y, Z).
+    pub fn read_acc_gyr_raw(
+        &mut self,
+    ) -> impl Future<Output = Result<([i16; 3], [i16; 3]), I::Error>> {
+        self.inner.acc_gyr_data().read_async().map_ok(|data| {
+            (
+                [data.acc_x(), data.acc_y(), data.acc_z()],
+                [data.gyr_x(), data.gyr_y(), data.gyr_z()],
+            )
+        })
+    }
+
+    /// Read accelerometer and gyroscope data (in that order) scaled to g and deg/s according to the configured range.
+    pub fn read_acc_gyr_scaled(
+        &mut self,
+    ) -> impl Future<Output = Result<([f32; 3], [f32; 3]), I::Error>> {
+        let acc_scalar = self.acc_range.scalar();
+        let gyr_scalar = self.gyr_range.scalar();
+        self.inner.acc_gyr_data().read_async().map_ok(move |data| {
+            (
+                [
+                    data.acc_x() as f32 * acc_scalar,
+                    data.acc_y() as f32 * acc_scalar,
+                    data.acc_z() as f32 * acc_scalar,
+                ],
+                [
+                    data.gyr_x() as f32 * gyr_scalar,
+                    data.gyr_y() as f32 * gyr_scalar,
+                    data.gyr_z() as f32 * gyr_scalar,
+                ],
+            )
+        })
+    }
+
+    /// Read raw accelerometer data in LSB (X, Y, Z).
     pub fn read_acc_raw(&mut self) -> impl Future<Output = Result<[i16; 3], I::Error>> {
         self.inner
             .acc_data()

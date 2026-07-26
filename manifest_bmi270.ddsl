@@ -39,6 +39,23 @@ device InnerBmi270 {
         }
     },
 
+
+    /// Accelerometer and gyroscope data for X, Y, Z axes (12 bytes, signed 16-bit per axis, LE).
+    register AccGyrData {
+        access: RO,
+        address: 0x0C,
+        fields: fieldset AccGyrDataFields {
+            size-bytes: 12,
+            byte-order: LE,
+            field acc_x 15:0 -> i16,
+            field acc_y 31:16 -> i16,
+            field acc_z 47:32 -> i16,
+            field gyr_x 63:48 -> i16, // 15:0
+            field gyr_y 79:64 -> i16, // 31:16
+            field gyr_z 95:80 -> i16, // 47:32
+        }
+    },
+
     /// Accelerometer data for X, Y, Z axes (6 bytes, signed 16-bit per axis, LE).
     register AccData {
         access: RO,
