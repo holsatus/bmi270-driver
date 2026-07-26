@@ -42,6 +42,7 @@ device InnerBmi270 {
 
     /// Accelerometer and gyroscope data for X, Y, Z axes (12 bytes, signed 16-bit per axis, LE).
     register AccGyrData {
+        address-overlap: allow,
         access: RO,
         address: 0x0C,
         fields: fieldset AccGyrDataFields {
@@ -58,6 +59,7 @@ device InnerBmi270 {
 
     /// Accelerometer data for X, Y, Z axes (6 bytes, signed 16-bit per axis, LE).
     register AccData {
+        address-overlap: allow,
         access: RO,
         address: 0x0C,
         fields: fieldset AccDataFields {
@@ -169,7 +171,15 @@ device InnerBmi270 {
 
     /// FIFO data buffer. Burst read only; address does not auto-increment.
     buffer FifoData {
+        access: RO,
         address: 0x26,
+    },
+
+    /// Feature configuration data writes. Each byte is written to the internal SRAM at the
+    /// current init address pointer, which auto-increments after each write.
+    buffer InitData {
+        access: WO,
+        address: 0x5E,
     },
 
     /// Accelerometer configuration: output data rate, bandwidth, and filter performance.
@@ -397,16 +407,6 @@ device InnerBmi270 {
         fields: fieldset InitAddr1Fields {
             size-bytes: 1,
             field base_11_4 7:0 -> u8,
-        }
-    },
-
-    /// Feature initialization data register.
-    register InitData {
-        access: RW,
-        address: 0x5E,
-        fields: fieldset InitDataFields {
-            size-bytes: 1,
-            field data 7:0 -> u8,
         }
     },
 

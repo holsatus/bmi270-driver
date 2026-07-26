@@ -4,7 +4,7 @@ mod firmware;
 
 pub mod compat_embedded_hal;
 
-use device_driver::AsyncRegisterInterface;
+use device_driver::{AsyncBufferInterface, AsyncRegisterInterface, RegisterInterfaceBase};
 use embedded_hal_async::{delay::DelayNs, i2c::I2c, spi::SpiDevice};
 use futures_util::TryFutureExt as _;
 
@@ -91,12 +91,16 @@ impl<I2C: I2c> Bmi270<I2cWrap<I2C>> {
     }
 }
 
-impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
+impl<I> Bmi270<I>
+where
+    I: AsyncRegisterInterface<AddressType = u8>,
+    I: AsyncBufferInterface<AddressType = u8, Error = <I as RegisterInterfaceBase>::Error>,
+{
     /// Initialize the BMI270: soft reset, disable APS, load features, verify chip ID.
     pub async fn initialize(
         interface: I,
         mut delay: impl DelayNs,
-    ) -> Result<Self, Error<I::Error>> {
+    ) -> Result<Self, Error<<I as RegisterInterfaceBase>::Error>> {
         let mut bmi = Bmi270 {
             inner: InnerBmi270::new(interface),
             acc_range: AccRangeVariant::default(),
@@ -126,6 +130,9 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
             return Err(Error::ChipId(chip_id));
         }
 
+        bmi.set_acc_enabled(true).await?;
+        bmi.set_gyr_enabled(true).await?;
+
         // Set default ranges
         bmi.set_acc_range(bmi.acc_range).await?;
         bmi.set_gyr_range(bmi.gyr_range).await?;
@@ -134,7 +141,10 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
     }
 
     /// Load feature initialization data into the device from the bundled firmware.
-    async fn load_init_data(&mut self, mut delay: impl DelayNs) -> Result<(), Error<I::Error>> {
+    async fn load_init_data(
+        &mut self,
+        mut delay: impl DelayNs,
+    ) -> Result<(), Error<<I as RegisterInterfaceBase>::Error>> {
         let data = firmware::BMI270_FIRMWARE;
 
         // Prepare config load: write 0x00 to arm the firmware loader
@@ -143,7 +153,7 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
             .write_async(|reg| reg.set_init_ctrl(InitCtrlVariant::Prepare))
             .await?;
 
-        // Write init data in 32-byte chunks
+        // Write init data in 32-byte chunks as burst transactions.
         for (chunk_idx, chunk) in data.chunks(32).enumerate() {
             // Address unit is 2 bytes, so chunk_idx * 16 gives the byte offset / 2
             let addr = (chunk_idx * 16) as u16;
@@ -156,14 +166,7 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
                 .write_async(|reg| reg.set_base_11_4((addr >> 4) as u8))
                 .await?;
 
-            // BMI270 auto-increments the internal address pointer after each INIT_DATA write.
-            // Writing bytes individually is equivalent to a burst write.
-            for &byte in chunk {
-                self.inner
-                    .init_data()
-                    .write_async(|reg| reg.set_data(byte))
-                    .await?;
-            }
+            self.inner.init_data().write_all_async(chunk).await?;
         }
 
         // Datasheet: wait 450µs after firmware upload before triggering init
@@ -179,7 +182,12 @@ impl<I: AsyncRegisterInterface<AddressType = u8>> Bmi270<I> {
         self.wait_init_done(delay).await?;
         Ok(())
     }
+}
 
+impl<I> Bmi270<I>
+where
+    I: AsyncRegisterInterface<AddressType = u8>,
+{
     /// Poll INTERNAL_STATUS until init_status == InitOk, or error.
     async fn wait_init_done(&mut self, mut delay: impl DelayNs) -> Result<(), Error<I::Error>> {
         // Datasheet: init completes within at most 20 ms
