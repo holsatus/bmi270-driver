@@ -145,7 +145,7 @@ where
         &mut self,
         mut delay: impl DelayNs,
     ) -> Result<(), Error<<I as RegisterInterfaceBase>::Error>> {
-        let data = firmware::BMI270_FIRMWARE;
+        let data = &firmware::BMI270_FIRMWARE;
 
         // Prepare config load: write 0x00 to arm the firmware loader
         self.inner
