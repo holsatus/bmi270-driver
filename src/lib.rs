@@ -11,7 +11,6 @@ use futures_util::TryFutureExt as _;
 use crate::compat_embedded_hal::{I2cWrap, SpiWrap};
 
 device_driver::compile!(
-    options: "",
     manifest: "manifest_bmi270.ddsl"
 );
 

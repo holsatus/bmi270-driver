@@ -1,6 +1,7 @@
 device InnerBmi270 {
     register-address-type: u8,
     buffer-address-type: u8,
+    default-access: RW,
 
     /// Contains the hard-coded chip identifier (0x24).
     register ChipId {

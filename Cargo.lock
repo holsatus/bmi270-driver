@@ -80,9 +80,9 @@ dependencies = [
 
 [[package]]
 name = "askama"
-version = "0.15.6"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b8246bcbf8eb97abef10c2d92166449680d41d55c0fc6978a91dec2e3619608"
+checksum = "f1bf825125edd887a019d0a3a837dcc5499a68b0d034cc3eb594070c3e18addc"
 dependencies = [
  "askama_macros",
  "itoa",
@@ -93,9 +93,9 @@ dependencies = [
 
 [[package]]
 name = "askama_derive"
-version = "0.15.6"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f9670bc84a28bb3da91821ef74226949ab63f1265aff7c751634f1dd0e6f97c"
+checksum = "e1c7065972a130eafa84215f21352ae15b4a7393da48c1f5e103904490736738"
 dependencies = [
  "askama_parser",
  "memchr",
@@ -107,18 +107,18 @@ dependencies = [
 
 [[package]]
 name = "askama_macros"
-version = "0.15.6"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0756b45480437dded0565dfc568af62ccce146fb6cfe902e808ba86e445f44f"
+checksum = "0e23b1d2c4bd39a41971f6124cef4cc6fd0540913ecb90919b69ab3bbe44ae1a"
 dependencies = [
  "askama_derive",
 ]
 
 [[package]]
 name = "askama_parser"
-version = "0.15.6"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d0af3691ba3af77949c0b5a3925444b85cb58a0184cc7fec16c68ba2e7be868"
+checksum = "7db09fde9143e7ac4513358fb32ee32847125b63b18ea715afd487956da715da"
 dependencies = [
  "rustc-hash",
  "unicode-ident",
@@ -135,6 +135,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "bumpalo"
+version = "3.20.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
+
+[[package]]
+name = "cfg-if"
+version = "1.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
+
+[[package]]
 name = "chumsky"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -149,9 +161,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.6.4"
+version = "4.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d91e0c145792ef73a6ad36d27c75ac09f1832222a3c209689d90f534685ee5b7"
+checksum = "473c7e07f409a8d772161724aa8db6a765a2532a70f9667eeb7b49d3d02fbdca"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -159,9 +171,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.6.2"
+version = "4.6.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f09628afdcc538b57f3c6341e9c8e9970f18e4a481690a64974d7023bd33548b"
+checksum = "7b48fea5a88e9ae728a2dcbedbfc0e730f7d60da42e1cb049a83c9fb8b789889"
 dependencies = [
  "anstream",
  "anstyle",
@@ -195,25 +207,27 @@ checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
 
 [[package]]
 name = "convert_case"
-version = "0.10.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "633458d4ef8c78b72454de2d54fd6ab2e60f9e02be22f3c6104cdc8a4e0fceb9"
+checksum = "affbf0190ed2caf063e3def54ff444b449371d55c58e513a95ab98eca50adb49"
 dependencies = [
  "unicode-segmentation",
 ]
 
 [[package]]
 name = "device-driver"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2503fa8477e63231b485f927f7e578cf05de86ab8a883f6d7b401d8adcd169c4"
 dependencies = [
  "device-driver-macros",
 ]
 
 [[package]]
 name = "device-driver-codegen"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e34fe207199432a7cc91353f3b7092eeb245590e6f8aecd34717fb7d4f9d1dc"
 dependencies = [
  "askama",
  "clap",
@@ -225,19 +239,23 @@ dependencies = [
 
 [[package]]
 name = "device-driver-common"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56861f388519f62e63f12c1b4047070c874aa982f08b7f04f4a5cd85aa0b4d05"
 dependencies = [
  "chumsky",
  "convert_case",
  "unicode-ident",
+ "web-time",
 ]
 
 [[package]]
 name = "device-driver-core"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b229ef2f525305e5d13c4d2fef33ca449e3574a67a4171c53dcecaef9963f53b"
 dependencies = [
+ "annotate-snippets",
  "clap",
  "device-driver-codegen",
  "device-driver-common",
@@ -248,13 +266,14 @@ dependencies = [
  "device-driver-parser",
  "itertools",
  "prettyplease",
- "syn 2.0.119",
+ "syn 3.0.3",
 ]
 
 [[package]]
 name = "device-driver-diagnostics"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b745bd291a60f6f4855a283e58cc306680d4062bec5c2105c22021855b43a34"
 dependencies = [
  "annotate-snippets",
  "convert_case",
@@ -264,8 +283,9 @@ dependencies = [
 
 [[package]]
 name = "device-driver-lexer"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e62bd3011b65675d3659875999e147d03aec7b8da4b024164766d0c2396cd1a"
 dependencies = [
  "device-driver-common",
  "logos",
@@ -273,8 +293,9 @@ dependencies = [
 
 [[package]]
 name = "device-driver-lir"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28674ea41bac6e02978cb4cadf42c86ba546dc778d255824376ae2baeba78e48"
 dependencies = [
  "convert_case",
  "device-driver-common",
@@ -284,20 +305,22 @@ dependencies = [
 
 [[package]]
 name = "device-driver-macros"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0b79f0cc6b925d09179f6fe8e11ae2235a93a267a83c7f6347ba2cebfc89480"
 dependencies = [
  "clap",
  "device-driver-core",
  "device-driver-diagnostics",
  "proc-macro2",
- "syn 2.0.119",
+ "syn 3.0.3",
 ]
 
 [[package]]
 name = "device-driver-mir"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6c17f28625c0ec32c68133690df48ff9b5c97c504b2539bdedd9f566cb61eabc"
 dependencies = [
  "clap",
  "convert_case",
@@ -310,8 +333,9 @@ dependencies = [
 
 [[package]]
 name = "device-driver-parser"
-version = "2.0.0-alpha.1"
-source = "git+https://github.com/peterkrull/device-driver?branch=regop-self-by-value#e5f48da7a7abe7c06ee5564c36d8c842ea895096"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab1f68314b8fc8d24a820739f9fdc660609ddda6e4f263c05ec70d9d12a97e84"
 dependencies = [
  "chumsky",
  "device-driver-common",
@@ -385,6 +409,7 @@ dependencies = [
  "futures-core",
  "futures-task",
  "pin-project-lite",
+ "slab",
 ]
 
 [[package]]
@@ -412,9 +437,9 @@ checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
 name = "itertools"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
+checksum = "8b4baf93f58d4425749ca49a51c50ebab072c5df6994d08fed93541c331481dc"
 dependencies = [
  "either",
 ]
@@ -424,6 +449,17 @@ name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
+
+[[package]]
+name = "js-sys"
+version = "0.3.104"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0e0c1080212aad755ea003d18543e8768dd432c48819efd73a7bf1e39b7a5a3a"
+dependencies = [
+ "cfg-if",
+ "futures-util",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "logos"
@@ -464,6 +500,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98"
 
 [[package]]
+name = "once_cell"
+version = "1.21.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
+
+[[package]]
 name = "once_cell_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -483,12 +525,12 @@ checksum = "a89322df9ebe1c1578d689c92318e070967d1042b512afbe49518723f4e6d5cd"
 
 [[package]]
 name = "prettyplease"
-version = "0.2.37"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
+checksum = "2bfe0f4c752e450fc2faf62654f1c134747922825d5b04ca717b8874f41a40c0"
 dependencies = [
  "proc-macro2",
- "syn 2.0.119",
+ "syn 3.0.3",
 ]
 
 [[package]]
@@ -533,6 +575,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6b1e7f9a428571be2dc5bc0505c13fb6bf936822b894ec87abf8a08a4e51742d"
 
 [[package]]
+name = "rustversion"
+version = "1.0.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
+
+[[package]]
 name = "serde"
 version = "1.0.229"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -574,6 +622,12 @@ dependencies = [
  "serde_core",
  "zmij",
 ]
+
+[[package]]
+name = "slab"
+version = "0.4.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c790de23124f9ab44544d7ac05d60440adc586479ce501c1d6d7da3cd8c9cf5"
 
 [[package]]
 name = "strsim"
@@ -626,6 +680,61 @@ name = "utf8parse"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
+
+[[package]]
+name = "wasm-bindgen"
+version = "0.2.127"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b70935747edd64d89de3efa29d73789b806c15798f8e7dca4d8ac356b50ce70"
+dependencies = [
+ "cfg-if",
+ "once_cell",
+ "rustversion",
+ "wasm-bindgen-macro",
+ "wasm-bindgen-shared",
+]
+
+[[package]]
+name = "wasm-bindgen-macro"
+version = "0.2.127"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77775f8f3f7217702089053b94958f8f54061a3f663417df76e19cbdcca29bc1"
+dependencies = [
+ "quote",
+ "wasm-bindgen-macro-support",
+]
+
+[[package]]
+name = "wasm-bindgen-macro-support"
+version = "0.2.127"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e11d33f857dc2fb11b8bc75aee111aa9cbeb12cd9f25efd3d4c2a3dd4e235284"
+dependencies = [
+ "bumpalo",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+ "wasm-bindgen-shared",
+]
+
+[[package]]
+name = "wasm-bindgen-shared"
+version = "0.2.127"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ef64dbcc55df09c7e5a46182d181c2cfa3e925f3da937ea764728b4bbb9dcbf"
+dependencies = [
+ "unicode-ident",
+]
+
+[[package]]
+name = "web-time"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
+dependencies = [
+ "js-sys",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "windows-link"

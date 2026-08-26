@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-device-driver = { git = "https://github.com/peterkrull/device-driver", branch = "regop-self-by-value" }
+device-driver = { version = "2.1.0", features = ["macros"] }
 futures-util = { version = "0.3.32", default-features = false }
 embedded-hal-async = "1.0.0"
